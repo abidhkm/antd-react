@@ -1,7 +1,8 @@
 import React from 'react'
 import { Row, Col, Typography } from 'antd';
-import './styles.scss'
 import { defaultImage } from './constants';
+import PropTypes from 'prop-types';
+import './styles.scss'
 
 const { Text } = Typography;
 
@@ -11,19 +12,22 @@ const ItemList = ({ list = [], onSelect, selected }) => {
             <Col span={2} ></Col>
             <Col span={11} className="col1"  >
                 <Text strong>
-                Name In English
+                    Name In English
                 </Text>
             </Col>
             <Col span={11} className="col2" >
                 <Text strong >
-                Name In Arabic
+                    Name In Arabic
                 </Text>
             </Col>
         </Row>
         {
-            list.map((item) => <Row onClick={() => onSelect(item)} className={`item-row ${selected === item.id ? 'highlight' : ''}`}  >
+            list.map((item, index) => <Row key={index}
+                onClick={() => onSelect && onSelect(item)}
+                className={`item-row ${selected === item.id ? 'highlight' : ''}`}  >
+
                 <Col span={2} >
-                    <img className="item-image" alt={item.english} src={item.image ? item.image : defaultImage}  />
+                    <img className="item-image" alt={item.english} src={item.image ? item.image : defaultImage} />
                 </Col>
                 <Col span={11} className="col1"  >
                     <Text className="item-text" >
@@ -32,12 +36,19 @@ const ItemList = ({ list = [], onSelect, selected }) => {
                 </Col>
                 <Col span={11} className="col2" >
                     <Text className="item-text">
-                        Arabic
-                </Text>
+                        {item.arabic}
+                    </Text>
                 </Col>
+
             </Row>)
         }
     </div>)
 }
+
+ItemList.propTypes = {
+    list: PropTypes.array.isRequired,
+    onSelect: PropTypes.func,
+    selected: PropTypes.number
+  };
 
 export default ItemList;

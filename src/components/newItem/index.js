@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Form, Input, Button, Card, Upload } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { formItemLayout, tailFormItemLayout } from './constants';
+import PropTypes from 'prop-types';
 import './styles.scss'
 
 const NewItem = ({ title = 'Add New Category', onSubmit, onCancel }) => {
@@ -10,54 +11,46 @@ const NewItem = ({ title = 'Add New Category', onSubmit, onCancel }) => {
     const [img, setImg] = useState({});
     const [compessMode, setCompessMode] = useState({ web: false, mob: false })
 
-    const onFinish = values => {
+    const onFinish = useCallback(values => {
         onSubmit(values)
-    };
+    }, [onSubmit]);
 
-    function getBase64(img, callback) {
+    const getBase64 = useCallback((img, callback) => {
         const reader = new FileReader();
         reader.addEventListener('load', () => callback(reader.result));
         reader.readAsDataURL(img);
-    }
+    }, [])
 
 
-    const onReset = () => {
+    const onReset = useCallback(() => {
         onCancel();
-    }
+    }, [onCancel])
 
-    const onChange = (name, val) => {
+    const onChange = useCallback((name, val) => {
 
         form.setFieldsValue({
             [name]: val
         })
 
-        if(name === 'web' || name === 'mob') {
+        if (name === 'web' || name === 'mob') {
             setCompessMode({
                 web: form.getFieldValue('web'),
                 mob: form.getFieldValue('mob')
             })
             form.setFieldsValue({
-                compress:compessMode
+                compress: compessMode
             })
         }
-    }
+    }, [compessMode, form])
 
 
-    const handleChange = info => {
-        // if (info.file.status === 'uploading') {
-        //     setImg({
-        //         loading: true
-        //     })
-        //     return;
-        // }
-        // if (info.file.status === 'done') {
-            getBase64(info.file.originFileObj, imageUrl => {
-                setImg({ ...img, imageUrl, loading: false })
-                onChange('image', imageUrl)
-            }
-            );
-        // }
-    };
+    const handleChange = useCallback(info => {
+        getBase64(info.file.originFileObj, imageUrl => {
+            setImg({ ...img, imageUrl, loading: false })
+            onChange('image', imageUrl)
+        }
+        );
+    }, [img, getBase64, onChange]);
 
     return (
         <Card title={title} className="form-card" >
@@ -121,8 +114,7 @@ const NewItem = ({ title = 'Add New Category', onSubmit, onCancel }) => {
                     rules={[
                         {
                             validator: () => {
-                                return Promise.resolve()
-                                // return (form.getFieldValue('mob') || form.getFieldValue('web')) ? Promise.resolve() : Promise.reject('Should select either one')
+                                return (form.getFieldValue('mob') || form.getFieldValue('web')) ? Promise.resolve() : Promise.reject('Should select either one')
                             }
                         },
                     ]}
@@ -176,6 +168,12 @@ const NewItem = ({ title = 'Add New Category', onSubmit, onCancel }) => {
 
             </Form>
         </Card>)
+}
+
+NewItem.prototype = {
+    title: PropTypes.string.isRequired,
+    onSubmit: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired,
 }
 
 export default NewItem

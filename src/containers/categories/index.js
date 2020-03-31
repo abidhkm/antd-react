@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import CategoriesComponet from '../../components/categories';
+import React, { useState, useEffect, lazy, useCallback } from 'react';
+import CategoriesComponet from '../../components/classifications';
 import ItemList from '../../components/itemList';
 import { Button, Row, Col } from 'antd';
 import NewItem from '../../components/newItem';
+import PropTypes from 'prop-types';
 import './styles.scss'
-import NotFound from '../notFound';
+
+const NotFound = lazy(() => import('../notFound'))
 
 const Categories = ({ selected }) => {
 
@@ -16,16 +18,16 @@ const Categories = ({ selected }) => {
 
     useEffect(() => {
         const titleIdMapping = {
-            8:0,
-            9:1
+            8: 0,
+            9: 1
         }
         setType(titleIdMapping[selected])
     }, [selected])
 
     useEffect(() => {
         setList([
-            { id: 0, english: 'item1', sublist: [{ id: 0, english: 'subitem 1 1' }, { id: 0, english: 'subitem 1 2' }, { id: 0, english: 'subitem 1 3' }, { id: 0, english: 'subitem 1 4' }] },
-            { id: 1, english: 'item2', sublist: [{ id: 0, english: 'subitem 2 1' }, { id: 0, english: 'subitem 2 2' }, { id: 0, english: 'subitem 2 3' }, { id: 0, english: 'subitem 2 4' }] }])
+            { id: 0, english: 'Tops', arabic: 'Tops ar', sublist: [{ id: 0, english: 'Shirt', arabic: 'Shirt ar' }, { id: 0, english: 'Blouse', arabic: 'Blouse ar' }, { id: 0, english: 'T Shirt', arabic: 'T Shirt ar' }, { id: 0, english: 'Office Uniform', arabic: 'Office Uniform ar' }] },
+            { id: 1, english: 'Bottoms', arabic: 'Bottoms ar', sublist: [] }])
         setSelectedItem(0)
     }, [])
 
@@ -35,35 +37,35 @@ const Categories = ({ selected }) => {
             setSubList(subList.sublist)
     }, [selectedItem, list])
 
-    const onSelect = (item) => {
+    const onSelect = useCallback((item) => {
         console.log(item)
         setType(item)
-    }
+    }, [])
 
 
-    const onBtnClick = (field, value) => {
+    const showFormFn = useCallback((field, value) => {
         setShowForm({
             [field]: value
         })
-    };
+    }, []);
 
-    const onNewCategory = (data) => {
+    const onNewCategory = useCallback((data) => {
         const itemId = list.length;
-        setList([...list, { id: itemId, english: data.english, sublist: [], image: data.image }])
-        onBtnClick('newCategory', false)
+        setList([...list, { id: itemId, english: data.english, arabic: data.arabic, sublist: [], image: data.image }])
+        showFormFn('newCategory', false)
         setSelectedItem(itemId)
-    }
+    }, [list, showFormFn])
 
-    const onNewSubCategory = (data) => {
+    const onNewSubCategory = useCallback((data) => {
         setList(list => {
             const copy = [...list]
             const selected = copy[selectedItem];
             console.log(selected)
-            selected.sublist = [...selected.sublist, { id: selected.sublist.length, english: data.english, image: data.image }]
+            selected.sublist = [...selected.sublist, { id: selected.sublist.length, english: data.english, arabic: data.arabic, image: data.image }]
             return copy;
         })
-        onBtnClick('newSubCategory', false)
-    }
+        showFormFn('newSubCategory', false)
+    }, [showFormFn, selectedItem])
 
 
     return (
@@ -81,7 +83,7 @@ const Categories = ({ selected }) => {
 
                         <Col span={10}>
                             <Row justify="end" >
-                                <Button onClick={() => onBtnClick('newCategory', true)} >Add Category +</Button>
+                                <Button onClick={() => showFormFn('newCategory', true)} >Add Category +</Button>
                             </Row>
                             <div style={{ marginTop: 30 }} ></div>
                             <ItemList
@@ -91,13 +93,13 @@ const Categories = ({ selected }) => {
                             />
                             {
                                 showForm.newCategory ?
-                                    <NewItem title="New Category" onSubmit={onNewCategory} onCancel={() => { onBtnClick('newCategory', false) }} /> : ''
+                                    <NewItem title="New Category" onSubmit={onNewCategory} onCancel={() => { showFormFn('newCategory', false) }} /> : ''
                             }
                         </Col>
 
                         <Col span={10}>
                             <Row justify="end" >
-                                <Button onClick={() => onBtnClick('newSubCategory', true)} >Add Sub-Category +</Button>
+                                <Button onClick={() => showFormFn('newSubCategory', true)} >Add Sub-Category +</Button>
                             </Row>
                             <div style={{ marginTop: 30 }} ></div>
 
@@ -107,19 +109,23 @@ const Categories = ({ selected }) => {
                             />
                             {
                                 showForm.newSubCategory ?
-                                    <NewItem title="New Category" onSubmit={onNewSubCategory} onCancel={() => onBtnClick('newSubCategory', false)} /> : ''
+                                    <NewItem title="New Sub Category" onSubmit={onNewSubCategory} onCancel={() => showFormFn('newSubCategory', false)} /> : ''
                             }
                         </Col>
 
                     </Row>
                 }
                 {
-                    type === 1 && 
+                    type === 1 &&
                     <NotFound />
                 }
             </div>
         </>
     )
+}
+
+Categories.prototype = {
+    seselected: PropTypes.number.isRequired
 }
 
 export default Categories;

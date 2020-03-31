@@ -10,11 +10,9 @@ const pages = {
 
 const ContentComponent = ({ selected }) => {
 
-
     const Component = useMemo(() => {
         return pages[selected[0]] ? pages[selected[0]] : NotFound
     }, [selected])
-
 
     return <div>
         <Suspense fallback={<div>Loading..</div>} >
